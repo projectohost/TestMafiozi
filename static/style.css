@@ -69,7 +69,7 @@ body.mafia-bg {
 .lobby-table {
   width: 100%;
   border-collapse: collapse;
-  color: #ffffff;
+  color: #f1f1f1;
 }
 
 .lobby-table th, .lobby-table td {
@@ -84,13 +84,4 @@ h1, h3, p{
 
 p strong{
   color: #f1f1f1;
-}
-
-
-.card p {
-  color: #fcffad;
-}
-
-.quote{
-  color:black;
 }

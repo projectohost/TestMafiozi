@@ -3,7 +3,7 @@ from supabase import create_client, Client
 from werkzeug.security import generate_password_hash, check_password_hash
 import os, random, string
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 load_dotenv()
@@ -320,7 +320,7 @@ def start_game(code):
     random.shuffle(roles)
 
     game_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     phase_duration = timedelta(seconds=35)
 
     # Створюємо гру: стартуємо з night
@@ -354,7 +354,7 @@ def game_phase(game_code):
         return {"error": "Гра не знайдена"}, 404
 
     game = game_res.data[0]
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     phase_end = datetime.fromisoformat(game["phase_end"])
 
     # Якщо таймер закінчився або всі живі гравці зробили дію

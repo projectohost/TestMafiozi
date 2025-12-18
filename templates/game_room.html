@@ -10,8 +10,8 @@
 
 <div class="container">
   <h1>Гра Мафія — {{ game_code }}</h1>
-  <p>Фаза: <span id="phase">завантаження...</span></p>
-  <p>Ваша роль: <b id="my-role">завантаження...</b></p>
+  <p>Фаза: <span id="phase">loading</span></p>
+  <p>Ваша роль: <b id="my-role">?</b></p>
 
   <h3>Гравці</h3>
   <div id="players"></div>
@@ -21,7 +21,8 @@
 
   <div id="actions"></div>
 
-  <div id="game-result" style="font-size:1.2em; font-weight:bold; color:red; margin-top:15px;"></div>
+  <div id="game-result"
+       style="font-size:1.2em;font-weight:bold;margin-top:15px;"></div>
 
   <a href="{{ url_for('dashboard') }}" class="btn">Вийти у лоббі</a>
 </div>
@@ -30,173 +31,151 @@
 const gameCode = "{{ game_code }}";
 const myNickname = "{{ session['user'] }}";
 
-let lastPhase = null;
-let lastEventsCount = 0;
+let currentPhase = null;
 let hasActed = false;
 let gameEnded = false;
+let lastEventsCount = 0;
 
-// Render players
+/* ---------- render players ---------- */
 function renderPlayers(players) {
-  const playersDiv = document.getElementById("players");
-  playersDiv.innerHTML = "";
+  const div = document.getElementById("players");
+  div.innerHTML = "";
+
   players.forEach(p => {
-    const div = document.createElement("div");
-    div.className = "card" + (!p.alive ? " dead" : "");
-    div.innerText = p.nickname + (p.nickname === myNickname ? " (Ви)" : "");
-    playersDiv.appendChild(div);
+    const card = document.createElement("div");
+    card.className = "card" + (!p.alive ? " dead" : "");
+    card.innerText = p.nickname + (p.nickname === myNickname ? " (Ви)" : "");
+    div.appendChild(card);
+
     if (p.nickname === myNickname) {
       document.getElementById("my-role").innerText = p.role;
     }
   });
 }
 
-// Render events
+/* ---------- render events ---------- */
 function renderEvents(events) {
-  const eventsDiv = document.getElementById("events");
-  if (events.length === lastEventsCount) return; // no new events
+  if (events.length === lastEventsCount) return;
   lastEventsCount = events.length;
-  eventsDiv.innerHTML = "";
+
+  const div = document.getElementById("events");
+  div.innerHTML = "";
   events.forEach(e => {
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerText = e;
-    eventsDiv.appendChild(div);
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerText = e;
+    div.appendChild(card);
   });
 }
 
-// Setup action buttons
-function renderActions(players, phase) {
-  const actionsDiv = document.getElementById("actions");
-  actionsDiv.innerHTML = "";
+/* ---------- render actions ---------- */
+function renderActions(players) {
+  const div = document.getElementById("actions");
+  div.innerHTML = "";
 
-  if (gameEnded) return;
+  if (gameEnded || hasActed) return;
 
   const me = players.find(p => p.nickname === myNickname);
-  if (!me || !me.alive || hasActed) return; // do not show buttons if dead or already acted
+  if (!me || !me.alive) return;
 
-  if (phase === "night") {
+  if (currentPhase === "night") {
     if (["mafia","don"].includes(me.role)) {
       players.filter(p => p.alive && p.nickname !== myNickname).forEach(p => {
-        const btn = document.createElement("button");
-        btn.innerText = `Вбити ${p.nickname}`;
-        btn.onclick = () => sendAction("kill", p.nickname);
-        actionsDiv.appendChild(btn);
-      });
-    } else if (me.role === "commisar") {
-      players.filter(p => p.alive && p.nickname !== myNickname).forEach(p => {
-        const checkBtn = document.createElement("button");
-        checkBtn.innerText = `Перевірити ${p.nickname}`;
-        checkBtn.onclick = () => {
-            const targetPlayer = players.find(pl => pl.nickname === p.nickname);
-            if (targetPlayer) {
-                alert(`Роль гравця ${targetPlayer.nickname}: ${targetPlayer.role}`);
-                hasActed = true;
-                actionsDiv.innerHTML = "<p>Дія виконана ✅</p>";
-            }
-        };
-        // const shootBtn = document.createElement("button");
-        // shootBtn.innerText = `Стріляти ${p.nickname}`;
-        // shootBtn.onclick = () => sendAction("shoot", p.nickname);
-        actionsDiv.appendChild(checkBtn);
-        // actionsDiv.appendChild(shootBtn);
-      });
-    } else if (me.role === "surgeon") {
-      players.filter(p => p.alive).forEach(p => {
-        const btn = document.createElement("button");
-        btn.innerText = `Вилікувати ${p.nickname}`;
-        btn.onclick = () => sendAction("heal", p.nickname);
-        actionsDiv.appendChild(btn);
+        const b = document.createElement("button");
+        b.innerText = `Вбити ${p.nickname}`;
+        b.onclick = () => sendAction("kill", p.nickname);
+        div.appendChild(b);
       });
     }
-  } else if (phase === "day") {
+
+    if (me.role === "surgeon") {
+      players.filter(p => p.alive).forEach(p => {
+        const b = document.createElement("button");
+        b.innerText = `Вилікувати ${p.nickname}`;
+        b.onclick = () => sendAction("heal", p.nickname);
+        div.appendChild(b);
+      });
+    }
+  }
+
+  if (currentPhase === "day") {
     players.filter(p => p.alive && p.nickname !== myNickname).forEach(p => {
-      const btn = document.createElement("button");
-      btn.innerText = `Проголосувати за ${p.nickname}`;
-      btn.onclick = () => sendAction("vote", p.nickname);
-      actionsDiv.appendChild(btn);
+      const b = document.createElement("button");
+      b.innerText = `Голосувати за ${p.nickname}`;
+      b.onclick = () => sendAction("vote", p.nickname);
+      div.appendChild(b);
     });
   }
 }
 
-// Send action to server
-function sendAction(actionType, target) {
-  const phase = document.getElementById("phase").innerText;
+/* ---------- send action ---------- */
+function sendAction(type, target) {
   fetch(`/api/game_actions/${gameCode}`, {
     method: "POST",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ action_type: actionType, target: target, phase: phase })
+    body: JSON.stringify({
+      action_type: type,
+      target: target,
+      phase: currentPhase
+    })
   })
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === "ok") {
-      hasActed = true; // mark that user acted
-      const actionsDiv = document.getElementById("actions");
-      actionsDiv.innerHTML = "<p>Дія виконана ✅</p>";
-      fetchGameResults(); // refresh events
+  .then(r => r.json())
+  .then(r => {
+    if (r.status === "ok") {
+      hasActed = true;
+      document.getElementById("actions").innerHTML = "Дія виконана ✅";
     }
   });
 }
 
-// Fetch game results
-function fetchGameResults() {
-  fetch(`/api/game_results/${gameCode}`)
-    .then(res => res.json())
-    .then(results => renderEvents(results.events));
-}
-
-// Check win conditions
+/* ---------- check win ---------- */
 function checkWin(players) {
-  if (gameEnded) return;
+  const mafia = players.filter(p => p.alive && ["mafia","don"].includes(p.role)).length;
+  const civ = players.filter(p => p.alive && !["mafia","don"].includes(p.role)).length;
 
-  const aliveMafia = players.filter(p => p.alive && ["mafia","don"].includes(p.role)).length;
-  const aliveCivilians = players.filter(p => p.alive && !["mafia","don"].includes(p.role)).length;
-
-  if (aliveMafia === 0) {
-    document.getElementById("game-result").innerText = "🎉 Перемога мирних жителів!";
+  if (mafia === 0) {
+    gameEnded = true;
+    document.getElementById("game-result").innerText = "🎉 Мирні перемогли!";
     document.getElementById("game-result").style.color = "green";
+  }
+  if (mafia >= civ) {
     gameEnded = true;
-  } else if (aliveMafia >= aliveCivilians) {
-    document.getElementById("game-result").innerText = "💀 Перемога мафії!";
+    document.getElementById("game-result").innerText = "💀 Мафія перемогла!";
     document.getElementById("game-result").style.color = "red";
-    gameEnded = true;
   }
 
-  if (gameEnded) {
-    clearInterval(pollingInterval);
-  }
-
+  if (gameEnded) clearInterval(pollingInterval);
 }
 
-// Fetch game data and phase
+/* ---------- update game ---------- */
 function updateGame() {
   fetch(`/api/game/${gameCode}`)
-    .then(res => res.json())
+    .then(r => r.json())
     .then(data => {
       renderPlayers(data.players);
       checkWin(data.players);
 
       fetch(`/api/game_phase/${gameCode}`)
-        .then(res => res.json())
-        .then(phaseData => {
-          const phaseSpan = document.getElementById("phase");
-          phaseSpan.innerText = phaseData.phase;
-
-          // Reset hasActed if phase changed
-          if (lastPhase !== phaseData.phase) {
-            lastPhase = phaseData.phase;
+        .then(r => r.json())
+        .then(p => {
+          if (currentPhase !== p.phase) {
+            currentPhase = p.phase;
             hasActed = false;
+            document.getElementById("phase").innerText = currentPhase;
           }
 
-          renderActions(data.players, phaseData.phase);
-          fetchGameResults();
+          renderActions(data.players);
+
+          fetch(`/api/game_results/${gameCode}`)
+            .then(r => r.json())
+            .then(r => renderEvents(r.events));
         });
     });
 }
 
-// Start polling every 3s
-setInterval(updateGame, 3000);
-updateGame(); // initial load
-
+/* ---------- polling ---------- */
+const pollingInterval = setInterval(updateGame, 2000);
+updateGame();
 </script>
 
 </body>
