@@ -346,6 +346,15 @@ def start_game(code):
     flash("Гра почалася!", "success")
     return redirect(url_for("game_room", game_code=game_code))
 
+
+def parse_iso(dt):
+    if isinstance(dt, datetime):
+        return dt
+    return datetime.fromisoformat(
+        dt.replace("Z", "+00:00")
+    ).astimezone(timezone.utc)
+
+
 # ---------- Game phase route ----------
 @app.route('/api/game_phase/<game_code>')
 def game_phase(game_code):
@@ -355,7 +364,7 @@ def game_phase(game_code):
 
     game = game_res.data[0]
     now = datetime.now(timezone.utc)
-    phase_end = datetime.fromisoformat(game["phase_end"])
+    phase_end = parse_iso(game["phase_end"])
 
     # Якщо таймер закінчився або всі живі гравці зробили дію
     alive_players = supabase.table("game_players").select("*").eq("game_code", game_code).eq("alive", True).execute().data
