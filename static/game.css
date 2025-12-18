@@ -1,0 +1,59 @@
+.container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+}
+.card {
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #333;
+  border-radius: 5px;
+  background: #fff;
+}
+.btn {
+  padding: 10px 15px;
+  margin-top: 10px;
+  display: inline-block;
+  background: #333;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 5px;
+}
+.dead {
+  opacity: 0.5;
+}
+#phase {
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.card {
+  padding: 10px;
+  margin: 5px 0;
+  background: #fffbab;
+  border-radius: 6px;
+}
+
+.card.dead {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+#actions button {
+  display: block;
+  width: 100%;
+  margin: 6px 0;
+  padding: 8px;
+  font-weight: bold;
+}
+
+.reconnect {
+  display: none;
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  background: orange;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+

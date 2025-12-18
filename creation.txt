@@ -1,0 +1,49 @@
+create table if not exists users (
+    id uuid primary key default gen_random_uuid(),
+    nickname varchar(32) unique not null,
+    password text not null,
+    created_at timestamptz default now()
+);
+
+create table if not exists lobbies (
+    id uuid primary key default gen_random_uuid(),
+    code varchar(5) unique not null,
+    host varchar(32) not null,
+    created_at timestamptz default now()
+);
+
+create table if not exists lobby_players (
+    id uuid primary key default gen_random_uuid(),
+    lobby_code varchar(5) not null,
+    nickname varchar(32) not null,
+    joined_at timestamptz default now(),
+    unique (lobby_code, nickname)
+);
+
+create table if not exists games (
+    game_code text primary key,   -- unique 6-char game code
+    lobby_code text references lobbies(code) on delete cascade,
+    phase text not null,          -- "day" / "night"
+    phase_start timestamp not null,
+    phase_end timestamp not null,
+    is_active boolean default true
+);
+
+create table if not exists game_players (
+    id serial primary key,
+    game_code text not null references games(game_code) on delete cascade,
+    nickname text not null references users(nickname) on delete cascade,
+    role text not null,           -- mafia, don, commisar, surgeon, civilian, homeless
+    alive boolean default true,
+    actions jsonb default '{}'    -- store role-specific actions per round
+);
+
+create table game_actions (
+  id bigint generated always as identity primary key,
+  game_code text references games(game_code) on delete cascade,
+  phase text,
+  actor text,
+  target text,
+  action_type text,
+  created_at timestamp default now()
+);

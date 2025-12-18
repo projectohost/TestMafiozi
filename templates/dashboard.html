@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Мафіозний штаб</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="mafia-bg">
+
+  <div class="dashboard-container">
+
+    <!-- Ліва панель -->
+    <div class="sidebar">
+      <h2>💼 Панель</h2>
+      <p><strong>{{ user }}</strong></p>
+      <a href="{{ url_for('lobby') }}" class="btn">🎮 Лоббі</a>
+      <a href="{{ url_for('dashboard') }}" class="btn">📊 Дашборд</a>
+      <a href="{{ url_for('logout') }}" class="btn">🚪 Вихід</a>
+    </div>
+
+    <!-- Основна частина -->
+    <div class="main-content">
+      <h1>🎩 Вітаємо, {{ user }}!</h1>
+      <p class="quote">{{ quote }}</p>
+
+      <div class="card">
+        <h2>🕵️‍♂️ Активні лоббі</h2>
+        {% if lobbies %}
+          <table class="lobby-table">
+            <tr>
+              <th>Код</th>
+              <th>Хост</th>
+              <th>Дата</th>
+            </tr>
+            {% for lobby in lobbies %}
+            <tr>
+              <td>{{ lobby.code }}</td>
+              <td>{{ lobby.host }}</td>
+              <td>{{ lobby.created_at[:19].replace('T', ' ') }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        {% else %}
+          <p>Наразі лоббі немає. Створи своє!</p>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <h2>📰 Мафіозні новини</h2>
+        <ul>
+          <li>💰 Новий гравець приєднався до сім’ї!</li>
+          <li>🚗 На вулицях Риму помічено підозрілий Cadillac.</li>
+          <li>💼 Бізнес процвітає, прибутки ростуть!</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

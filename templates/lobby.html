@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Лоббі Мафії</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head> 
+<body class="mafia-bg">
+  <div class="container">
+    <h1>🎩 Мафіозне Лоббі</h1>
+
+    <div class="card">
+      <h2>Створити лоббі</h2>
+      <form action="{{ url_for('create_lobby') }}" method="POST">
+        <button type="submit" class="btn">Створити</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Приєднатися до лоббі</h2>
+      <form action="{{ url_for('join_lobby') }}" method="POST">
+        <input type="text" name="code" placeholder="Введіть код (5 символів)" maxlength="5" required>
+        <button type="submit" class="btn">Приєднатися</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

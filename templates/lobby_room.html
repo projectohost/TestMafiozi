@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Лоббі {{ code }}</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body class="mafia-bg">
+    <div class="container">
+      <h1>🎩 Лоббі {{ code }}</h1>
+      <p>Хост: <b id="host"></b></p>
+
+      <h3>Гравці</h3>
+      <div id="players"></div>
+
+      <form action="{{ url_for('leave_lobby', code=code) }}" method="POST">
+        <button type="submit" class="btn">⬅ Назад</button>
+      </form>
+      {% if session['user'] == host %}
+      <form action="{{ url_for('start_game', code=code) }}" method="POST">
+        <button type="submit" class="btn start-game">Почати гру</button>
+      </form>
+      {% endif %}
+    </div>
+
+    <script>
+      const lobbyCode = "{{ code }}";
+
+      function loadLobby() {
+        fetch(`/api/lobby/${lobbyCode}`)
+          .then((res) => {
+            if (res.status === 404) {
+              // Lobby deleted → redirect to dashboard
+              alert("Лоббі закрите хостом. Повертаємось на Dashboard.");
+              window.location.href = "/dashboard";
+              return;
+            }
+            return res.json();
+          })
+          .then((data) => {
+            if (!data) return; // already redirected
+
+            // Update host
+            document.getElementById("host").innerText = data.host;
+
+            // Update players list
+            const playersDiv = document.getElementById("players");
+            playersDiv.innerHTML = "";
+
+            data.players.forEach((p) => {
+              const div = document.createElement("div");
+              div.className = "card";
+              div.innerText = "🎭 " + p;
+              playersDiv.appendChild(div);
+            });
+          })
+          .catch((err) => console.error("Помилка завантаження лоббі:", err));
+      }
+
+      
+      function checkGameStart() {
+        fetch(`/api/lobby_status/${lobbyCode}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.started) {
+              // Redirect to game room
+              window.location.href = `/game/${data.game_code}`;
+            }
+          });
+      }
+
+      
+      // Initial load
+      loadLobby();
+      
+      // Poll every 2 seconds
+      setInterval(loadLobby, 2000);
+      // Poll every 2 seconds
+      setInterval(checkGameStart, 2000);
+    </script>
+
+  </body>
+</html>

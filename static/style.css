@@ -1,0 +1,96 @@
+body.mafia-bg {
+  background: url('/static/mafia_bg.jpg') center/cover no-repeat fixed;
+  font-family: 'Cinzel', serif;
+  color: #fcf7ae;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100vh;
+  margin: 0;
+}
+
+.dashboard-container {
+  display: flex;
+  width: 90%;
+  max-width: 1200px;
+  margin-top: 50px;
+}
+
+.sidebar {
+  width: 250px;
+  background: rgba(20, 20, 20, 0.9);
+  border: 2px solid #c79b3b;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 0 15px #c79b3b;
+}
+
+.sidebar h2 {
+  border-bottom: 1px solid #c79b3b;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.main-content {
+  flex-grow: 1;
+  margin-left: 30px;
+}
+
+.card {
+  background: rgba(20, 20, 20, 0.8);
+  border: 1px solid #c79b3b;
+  border-radius: 15px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.btn {
+  display: block;
+  background-color: #c79b3b;
+  color: #000;
+  text-align: center;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.btn:hover {
+  background-color: #ffcc66;
+}
+
+.quote {
+  font-style: italic;
+  color: #ffda7b;
+  margin-bottom: 20px;
+}
+
+.lobby-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #ffffff;
+}
+
+.lobby-table th, .lobby-table td {
+  border: 1px solid #c79b3b;
+  padding: 10px;
+  text-align: center;
+}
+
+h1, h3, p{
+  color: black;
+}
+
+p strong{
+  color: #f1f1f1;
+}
+
+
+.card p {
+  color: #fcffad;
+}
+
+.quote{
+  color:black;
+}
